@@ -1,0 +1,23 @@
+
+
+.slot {
+    display: block;
+    width: 30px;
+    height: 30px;
+}
+
+.unchecked {
+    background: url(../img/normal.png) no-repeat top;
+}
+
+.unchecked:active {
+    background-image: url(../img/pressed.png);
+}
+
+.mine {
+    background: url(../img/mine.png) no-repeat top;
+}
+
+.exploded-mine {
+    background: url(../img/explosion.png) no-repeat top;
+}
