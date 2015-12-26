@@ -37,12 +37,12 @@
   ^{:key (:id slot) } [:td [:div {:class "slot empty" }]])
 
 (defn render-slot [slot]
-  (let [gameover (:game-over @app-state)]
-    (cond
-      (and gameover (not (:checked slot)) (:mine slot)) (render-mine slot)
-      (and gameover (:checked slot) (:mine slot)) (render-explosion slot)
-      (and (:checked slot) (not (:mine slot))) (render-empty slot)
-      :else (render-unchecked-slot slot))))
+  (cond
+    (and @game-over (not (:checked slot)) (:mine slot)) (render-mine slot)
+    (and @game-over (:checked slot) (:mine slot)) (render-explosion slot)
+    (and @game-over (not (:mine slot))) (render-empty slot)
+    (and (:checked slot) (not (:mine slot))) (render-empty slot)
+    :else (render-unchecked-slot slot)))
 
 (defn render-minefield-row [row]
   (let [rnum (:row (first row))]

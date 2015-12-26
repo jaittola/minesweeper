@@ -25,3 +25,7 @@
 .empty {
     background-color: #aaaaaa;
 }
+
+table {
+    border-collapse: collapse;
+}
