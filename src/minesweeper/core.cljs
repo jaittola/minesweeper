@@ -9,11 +9,17 @@
 ;; define your app data so that it doesn't get over-written on reload
 
 (defonce app-state (r/atom (m/make-empty-minefield 5 5)))
+(defonce game-over (atom false))
 
 (defn slot-clicked [row col]
   (println "Slot clicked at" row col)
-  (when (not (:game-over @app-state))
-    (swap! app-state m/slot-clicked row col)))
+  ;; This is a hack to avoid reagent's warnings about lazy
+  ;; sequences. I'm not sure about the reason but this trickery
+  ;; seems to work around it.
+  (when (not @game-over)
+    (let [minefield (m/slot-clicked @app-state row col)]
+      (swap! game-over (fn [_ mf] (:game-over mf)) minefield)
+      (swap! app-state (fn [_ mf] mf) minefield))))
 
 (defn render-unchecked-slot [slot]
   ^{:key (:id slot) } [:td [:a {:class "slot unchecked"
