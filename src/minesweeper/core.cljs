@@ -38,8 +38,10 @@
     ^{:key (str "r_" rnum)} [:tr (map render-slot row)]))
 
 (defn render-minefield []
-  [:div
-   [:table [:tbody (map render-minefield-row (:field @app-state))]]])
+  (let [field (:field @app-state)
+        row-vector (partition-by #(:row %) field)]
+    [:div
+     [:table [:tbody (map render-minefield-row row-vector)]]]))
 
 (defn do-render []
   (r/render [render-minefield]

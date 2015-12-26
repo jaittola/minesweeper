@@ -9,10 +9,16 @@
    :marked false
    :id (str row "_" col)})
 
+(defn slot-row [mine-index width]
+  (quot mine-index width))
+
+(defn slot-col [mine-index width]
+  (rem mine-index width))
+
 (defn make-empty-minefield [w h]
-  (let [mf (vec (for [row (range h)]
-                  (vec (for [col (range w)]
-                         (field-slot row col)))))]
+  (let [slot-indexes (range (* w h))
+        mf (doall (vec (map #(field-slot (slot-row % w) (slot-col % w))
+                            slot-indexes)))]
     {:game-over false
      :minecount 0
      :width w
@@ -24,21 +30,11 @@
   (let [a-set (set (take n-mines (repeatedly #(rand-int mf-size))))]
     (vec a-set)))
 
-(defn mine-pos [minefield mine-index]
-  (let [width (:width minefield)
-        row (quot mine-index width)
-        col (rem mine-index width)]
-    {:row row :col col}))
-
 (defn update-slot [minefield mine-index slot-update-func &
                    minefield-update-func]
   (let [field (:field minefield)
-        pos (mine-pos minefield mine-index)
-        row (doall (nth field (:row pos)))
-        slot (nth row (:col pos))
-        newslot (slot-update-func slot)
-        newrow (assoc row (:col pos) newslot)
-        newfield (assoc field (:row pos) newrow)
+        newslot (slot-update-func (nth field mine-index))
+        newfield (doall (assoc field mine-index newslot))
         newmf (assoc minefield :field newfield)]
     (if (nil? minefield-update-func)
       newmf
