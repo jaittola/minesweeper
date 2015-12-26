@@ -21,3 +21,7 @@
 .exploded-mine {
     background: url(../img/explosion.png) no-repeat top;
 }
+
+.empty {
+    background-color: #aaaaaa;
+}

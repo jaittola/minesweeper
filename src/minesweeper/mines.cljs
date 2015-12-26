@@ -64,13 +64,17 @@
       (setup-mines minefield n-mines row col))
     minefield))
 
-(defn make-mine-index [row col]
-  (* row col))
+(defn make-mine-index [minefield row col]
+  (+ (* row (:width minefield)) col))
+
+(defn mines-hit [minefield]
+  (filter #(and (:mine %) (:checked %)) (:field minefield)))
 
 (defn minefield-click [minefield row col]
-  (update-slot minefield
-               (make-mine-index row col)
-               (fn [slot] (assoc slot :checked true))))
+  (let [mf (update-slot minefield
+                        (make-mine-index minefield row col)
+                        (fn [slot] (assoc slot :checked true)))]
+    (assoc mf :game-over (not (empty? (mines-hit mf))))))
 
 (defn slot-clicked [minefield row col]
   (let [mf (setup-minefield-if-needed minefield row col)]
