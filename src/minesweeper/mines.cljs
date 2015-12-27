@@ -1,31 +1,31 @@
 (ns minesweeper.mines
   (:require [clojure.set :as set]))
 
-(defn field-slot [row col]
-  {:row row
-   :col col
-   :mine false
-   :checked false
-   :marked false
-   :adjacent-mines 0
-   :id (str row "_" col)})
-
 (defn slot-row [mine-index width]
   (quot mine-index width))
 
 (defn slot-col [mine-index width]
   (rem mine-index width))
 
+(defn field-slot [mine-index width]
+  (let [row (slot-row mine-index width)
+        col (slot-col mine-index width)]
+    {:row row
+     :col col
+     :mine false
+     :checked false
+     :marked false
+     :adjacent-mines 0
+     :id (str row "_" col)}))
+
 (defn make-empty-minefield [w h]
-  (let [slot-indexes (range (* w h))
-        mf (doall (vec (map #(field-slot (slot-row % w) (slot-col % w))
-                            slot-indexes)))]
+  (let [size (* w h)]
     {:game-over false
      :minecount 0
      :width w
      :height h
-     :size (* w h)
-     :field mf}))
+     :size size
+     :field (doall (vec (map #(field-slot % w) (range size))))}))
 
 (defn unique-random-numbers [n-mines mf-size]
   (let [a-set (set (take n-mines (repeatedly #(rand-int mf-size))))]
