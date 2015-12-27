@@ -1,5 +1,4 @@
 
-
 .slot {
     display: block;
     width: 30px;
@@ -34,4 +33,13 @@
 
 table {
     border-collapse: collapse;
+}
+
+.content-container {
+    display: inline-block;
+}
+
+.restart-dropdown {
+    display: block;
+    margin: 20px auto 0 auto;
 }
