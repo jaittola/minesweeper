@@ -2,6 +2,8 @@
 
 This is a simple version of the Minesweeper game that was made well-known by Microsoft Windows 3.
 
+To see this game in action, go to http://jaittola.github.io/minesweeper/
+
 ## Overview
 
 This version of Minesweeper has been implemented with ClojureScript.
