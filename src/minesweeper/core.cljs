@@ -21,6 +21,10 @@
       (swap! game-over (fn [_ mf] (:game-over mf)) minefield)
       (swap! app-state (fn [_ mf] mf) minefield))))
 
+(defn finish-game []
+  (swap! game-over #(identity true))
+  (swap! app-state #(assoc % :game-over true)))
+
 (defn render-unchecked-slot [slot]
   ^{:key (:id slot) } [:td [:a {:class "slot unchecked"
                                 :on-click #(slot-clicked
