@@ -60,7 +60,7 @@
 
 (defn setup-minefield-if-needed [minefield row col]
   (if (<= (:minecount minefield) 0)
-    (let [n-mines (int (* 1.3 (:width minefield)))]
+    (let [n-mines (int (* 1.5 (:width minefield)))]
       (setup-mines minefield n-mines row col))
     minefield))
 
