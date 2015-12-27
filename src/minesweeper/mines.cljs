@@ -55,14 +55,10 @@
   (let [start-pos (make-mine-index minefield start-row start-col)
         mine-locations (->> (unique-random-numbers n-mines
                                                    (:size minefield))
-                            (filter #(not= % start-pos))
-                            (sort))]
-    (loop [mines mine-locations
-           mf minefield]
-      (if (empty? mines)
-        mf
-        (recur (rest mines)
-               (set-mine-position mf (first mines)))))))
+                            (filter #(not= % start-pos)))]
+    (reduce (fn [mf mine-position]
+              (set-mine-position mf mine-position))
+            minefield mine-locations)))
 
 (defn count-adjacent-mines [minefield mine-index]
   (let [width (:width minefield)
@@ -79,16 +75,14 @@
          (count))))
 
 (defn setup-adjacency-counts [minefield]
-  (loop [slots (range (:size minefield))
-         mf minefield]
-    (if (empty? slots)
-      mf
-      (let [mine-index (first slots)
-            adjacent-mines (count-adjacent-mines mf mine-index)
-            new-mf (update-slot mf mine-index
-                                (fn [slot]
-                                  (assoc slot :adjacent-mines adjacent-mines)))]
-        (recur (rest slots) new-mf)))))
+  (reduce (fn [mf slot]
+            (let [mine-index (make-mine-index mf (:row slot) (:col slot))
+                  adjacent-mines (count-adjacent-mines mf mine-index)]
+              (update-slot mf
+                           mine-index
+                           (fn [slot]
+                             (assoc slot :adjacent-mines adjacent-mines)))))
+          minefield (:field minefield)))
 
 (defn setup-minefield-if-needed [minefield row col]
   (if (> (:minecount minefield) 0)
