@@ -48,9 +48,15 @@
                                       :minecount
                                       (inc (:minecount minefield))))))
 
+(defn make-mine-index [minefield row col]
+  (+ (* row (:width minefield)) col))
+
 (defn setup-mines [minefield n-mines start-row start-col]
-  (let [mine-locations (sort (unique-random-numbers n-mines
-                                                    (:size minefield)))]
+  (let [start-pos (make-mine-index minefield start-row start-col)
+        mine-locations (->> (unique-random-numbers n-mines
+                                                   (:size minefield))
+                            (filter #(not= % start-pos))
+                            (sort))]
     (loop [mines mine-locations
            mf minefield]
       (if (empty? mines)
@@ -63,9 +69,6 @@
     (let [n-mines (int (* 1.5 (:width minefield)))]
       (setup-mines minefield n-mines row col))
     minefield))
-
-(defn make-mine-index [minefield row col]
-  (+ (* row (:width minefield)) col))
 
 (defn mines-hit [minefield]
   (filter #(and (:mine %) (:checked %)) (:field minefield)))
