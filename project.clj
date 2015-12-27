@@ -17,7 +17,9 @@
               [{:id "dev"
                 :source-paths ["src"]
 
-                :figwheel {:on-jsload "minesweeper.core/on-js-reload" }
+                :figwheel {
+                           ;;:on-jsload "minesweeper.core/on-js-reload"
+                           }
 
                 :compiler {:main minesweeper.core
                            :asset-path "js/compiled/out"

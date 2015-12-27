@@ -67,8 +67,4 @@
   (r/render [render-minefield]
             (js/document.getElementById "container")))
 
-(defn on-js-reload []
-  (println "Reload hook")
-  (do-render))
-
 (do-render)
