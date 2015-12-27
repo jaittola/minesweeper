@@ -51,9 +51,8 @@
 (defn make-mine-index [minefield row col]
   (+ (* row (:width minefield)) col))
 
-(defn setup-mines [minefield n-mines start-row start-col]
-  (let [start-pos (make-mine-index minefield start-row start-col)
-        mine-locations (->> (unique-random-numbers n-mines
+(defn setup-mines [minefield n-mines start-pos]
+  (let [mine-locations (->> (unique-random-numbers n-mines
                                                    (:size minefield))
                             (filter #(not= % start-pos)))]
     (reduce (fn [mf mine-position]
@@ -87,25 +86,26 @@
                              (assoc slot :adjacent-mines adjacent-mines)))))
           minefield (:field minefield)))
 
-(defn setup-minefield-if-needed [minefield row col]
+(defn setup-minefield-if-needed [minefield mine-index]
   (if (> (:minecount minefield) 0)
     minefield
     (let [n-mines (int (* 1.5 (:width minefield)))]
-      (->> (setup-mines minefield n-mines row col)
+      (->> (setup-mines minefield n-mines mine-index)
            (setup-adjacency-counts)))))
 
 (defn mines-hit [minefield]
   (filter #(and (:mine %) (:checked %)) (:field minefield)))
 
-(defn minefield-click [minefield row col]
+(defn minefield-click [minefield mine-index]
   (let [mf (update-slot minefield
-                        (make-mine-index minefield row col)
+                        mine-index
                         (fn [slot] (assoc slot :checked true)))]
     (assoc mf :game-over (not (empty? (mines-hit mf))))))
 
 (defn slot-clicked [minefield row col]
-  (let [mf (setup-minefield-if-needed minefield row col)]
-    (minefield-click mf row col)))
+  (let [mine-index (make-mine-index minefield row col)
+        mf (setup-minefield-if-needed minefield mine-index)]
+    (minefield-click mf mine-index)))
 
 (defn unchecked-slots-without-mines [minefield]
   (->> (:field minefield)
