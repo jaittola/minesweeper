@@ -60,7 +60,7 @@
               (set-mine-position mf mine-position))
             minefield mine-locations)))
 
-(defn count-adjacent-mines [minefield mine-index]
+(defn adjacent-slots [minefield mine-index]
   (let [width (:width minefield)
         row (slot-row mine-index width)
         col (slot-col mine-index width)]
@@ -68,11 +68,14 @@
          (filter (fn [slot]
                    (let [r (:row slot)
                          c (:col slot)]
-                     (and (:mine slot)
-                          (<= (dec row) r (inc row))
+                     (and (<= (dec row) r (inc row))
                           (<= (dec col) c (inc col))
-                          (not (and (= r row) (= c col)))))))
-         (count))))
+                          (not (and (= r row) (= c col))))))))))
+
+(defn count-adjacent-mines [minefield mine-index]
+  (->> (adjacent-slots minefield mine-index)
+       (filter #(:mine %))
+       (count)))
 
 (defn setup-adjacency-counts [minefield]
   (reduce (fn [mf slot]
