@@ -38,7 +38,10 @@
   ^{:key (:id slot) } [:td [:a {:class "slot exploded-mine" }]])
 
 (defn render-empty [slot]
-  ^{:key (:id slot) } [:td [:div {:class "slot empty" }]])
+  (let [adj-mine-count (:adjacent-mines slot)
+        adj-mine-text (if (= adj-mine-count 0) "" adj-mine-count)]
+  ^{:key (:id slot) } [:td [:div {:class "slot empty" }
+                            adj-mine-text]]))
 
 (defn render-slot [slot]
   (cond
