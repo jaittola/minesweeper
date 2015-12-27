@@ -31,14 +31,13 @@
     (vec a-set)))
 
 (defn update-slot [minefield mine-index slot-update-func &
-                   minefield-update-func]
-  (let [field (:field minefield)
+                   [minefield-update-func]]
+  (let [mf-update-func (or minefield-update-func identity)
+        field (:field minefield)
         newmf (doall (->> (slot-update-func (nth field mine-index))
                           (assoc field mine-index)
                           (assoc minefield :field)))]
-    (if (nil? minefield-update-func)
-      newmf
-      ((first minefield-update-func) newmf))))
+    (mf-update-func newmf)))
 
 (defn set-mine-position [minefield mine-index]
   (update-slot minefield
