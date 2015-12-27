@@ -98,17 +98,22 @@
   (let [mf (reduce (fn [mf2 slot2]
                      (update-slot mf2 (:idx slot2)
                                   #(assoc % :checked true)))
-                   minefield adjacents)]
+                   minefield adjacents)
+        empty-adjacents (->> (reduce
+                              (fn [acc slot2]
+                                (conj acc (nth (:field mf) (:idx slot2))))
+                              [] adjacents)
+                             (filter #(= 0 (:adjacent-mines %))))]
     (reduce (fn [mf2 slot2]
               (open-adjacent-empty-slots-if-empty
                (:idx slot2) mf2))
-            mf adjacents)))
+            mf empty-adjacents)))
 
 (defn open-adjacent-empty-slots-if-empty [mine-index minefield]
   (let [slot (nth (:field minefield) mine-index)
         adjacents (->> minefield
                        (adjacent-slots mine-index)
-                       (filter #(and (= 0 (:adjacent-mines %))
+                       (filter #(and (not (:mine %))
                                      (not (:checked %)))))]
     (if (or (not= 0 (:adjacent-mines slot))
             (empty? adjacents))
