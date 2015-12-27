@@ -12,6 +12,7 @@
         col (slot-col mine-index width)]
     {:row row
      :col col
+     :idx mine-index
      :mine false
      :checked false
      :marked false
@@ -59,7 +60,7 @@
               (set-mine-position mf mine-position))
             minefield mine-locations)))
 
-(defn adjacent-slots [minefield mine-index]
+(defn adjacent-slots [mine-index minefield]
   (let [width (:width minefield)
         row (slot-row mine-index width)
         col (slot-col mine-index width)]
@@ -71,41 +72,64 @@
                           (<= (dec col) c (inc col))
                           (not (and (= r row) (= c col))))))))))
 
-(defn count-adjacent-mines [minefield mine-index]
-  (->> (adjacent-slots minefield mine-index)
+(defn count-adjacent-mines [mine-index minefield]
+  (->> (adjacent-slots mine-index minefield)
        (filter #(:mine %))
        (count)))
 
 (defn setup-adjacency-counts [minefield]
   (reduce (fn [mf slot]
-            (let [mine-index (make-mine-index mf (:row slot) (:col slot))
-                  adjacent-mines (count-adjacent-mines mf mine-index)]
+            (let [mine-index (:idx slot)
+                  adjacent-mines (count-adjacent-mines mine-index mf)]
               (update-slot mf
                            mine-index
-                           (fn [slot]
-                             (assoc slot :adjacent-mines adjacent-mines)))))
+                           (fn [slot2]
+                             (assoc slot2 :adjacent-mines adjacent-mines)))))
           minefield (:field minefield)))
 
-(defn setup-minefield-if-needed [minefield mine-index]
+(defn setup-minefield-if-needed [mine-index minefield]
   (if (> (:minecount minefield) 0)
     minefield
     (let [n-mines (int (* 1.5 (:width minefield)))]
       (->> (setup-mines minefield n-mines mine-index)
            (setup-adjacency-counts)))))
 
+(defn mark-adjacent-empty-slots-checked [adjacents minefield]
+  (let [mf (reduce (fn [mf2 slot2]
+                     (update-slot mf2 (:idx slot2)
+                                  #(assoc % :checked true)))
+                   minefield adjacents)]
+    (reduce (fn [mf2 slot2]
+              (open-adjacent-empty-slots-if-empty
+               (:idx slot2) mf2))
+            mf adjacents)))
+
+(defn open-adjacent-empty-slots-if-empty [mine-index minefield]
+  (let [slot (nth (:field minefield) mine-index)
+        adjacents (->> minefield
+                       (adjacent-slots mine-index)
+                       (filter #(and (= 0 (:adjacent-mines %))
+                                     (not (:checked %)))))]
+    (if (or (not= 0 (:adjacent-mines slot))
+            (empty? adjacents))
+      minefield
+      (mark-adjacent-empty-slots-checked adjacents minefield))))
+
 (defn mines-hit [minefield]
   (filter #(and (:mine %) (:checked %)) (:field minefield)))
 
-(defn minefield-click [minefield mine-index]
+(defn minefield-click [mine-index minefield]
   (let [mf (update-slot minefield
                         mine-index
                         (fn [slot] (assoc slot :checked true)))]
     (assoc mf :game-over (not (empty? (mines-hit mf))))))
 
 (defn slot-clicked [minefield row col]
-  (let [mine-index (make-mine-index minefield row col)
-        mf (setup-minefield-if-needed minefield mine-index)]
-    (minefield-click mf mine-index)))
+  (let [mine-index (make-mine-index minefield row col)]
+    (->> minefield
+         (setup-minefield-if-needed mine-index)
+         (minefield-click mine-index)
+         (open-adjacent-empty-slots-if-empty mine-index))))
 
 (defn unchecked-slots-without-mines [minefield]
   (->> (:field minefield)
