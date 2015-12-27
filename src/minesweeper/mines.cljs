@@ -33,9 +33,9 @@
 (defn update-slot [minefield mine-index slot-update-func &
                    minefield-update-func]
   (let [field (:field minefield)
-        newslot (slot-update-func (nth field mine-index))
-        newfield (doall (assoc field mine-index newslot))
-        newmf (assoc minefield :field newfield)]
+        newmf (doall (->> (slot-update-func (nth field mine-index))
+                          (assoc field mine-index)
+                          (assoc minefield :field)))]
     (if (nil? minefield-update-func)
       newmf
       ((first minefield-update-func) newmf))))
