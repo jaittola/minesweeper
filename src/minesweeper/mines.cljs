@@ -109,3 +109,8 @@
 (defn slot-clicked [minefield row col]
   (let [mf (setup-minefield-if-needed minefield row col)]
     (minefield-click mf row col)))
+
+(defn unchecked-slots-without-mines [minefield]
+  (->> (:field minefield)
+       (filter #(and (not (:mine %)) (not (:checked %))))
+       (count)))

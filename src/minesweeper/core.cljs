@@ -19,7 +19,9 @@
   (when (not @game-over)
     (let [minefield (m/slot-clicked @app-state row col)]
       (swap! game-over (fn [_ mf] (:game-over mf)) minefield)
-      (swap! app-state (fn [_ mf] mf) minefield))))
+      (swap! app-state (fn [_ mf] mf) minefield))
+    (when (= 0 (m/unchecked-slots-without-mines @app-state))
+      (finish-game))))
 
 (defn finish-game []
   (swap! game-over #(identity true))
