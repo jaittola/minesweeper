@@ -40,14 +40,26 @@ table {
 }
 
 .options-container {
-    margin-top: 20px;
+    margin-top: 8px;
     text-align: center;
 }
 
 .restart-container {
     display: inline-block;
+    margin-top: 8px;
 }
 
 .game-dropdown {
     margin-right: 5px;
+}
+
+@font-face {
+    font-family: 'DSEG7';
+    src: url('../fonts/DSEG7ClassicMini-BoldItalic.ttf') format('truetype');
+}
+
+.game-clock {
+    color: red;
+    font-family: 'DSEG7', Fallback, sans-serif;
+    font-size: 25px;
 }

@@ -10,23 +10,70 @@
 (defonce game-size (r/atom "5"))
 (defonce game-over (atom false))
 (defonce app-state (r/atom {}))
-
-(defn finish-game []
-  (swap! game-over #(identity true))
-  (swap! app-state #(assoc % :game-over true)))
+(defonce game-timer (r/atom {:starttime 0
+                             :duration 0
+                             :timerid -1}))
 
 (defn val-for-atom [_ val]
   val)
 
+(defn now []
+  (int (/ (js/Date.now) 1000)))
+
+(defn is-running [timerstate]
+  (>= (:timerid timerstate) 0))
+
+(defn game-timer-tick []
+  (swap! game-timer (fn [timerstate]
+                      (if (is-running timerstate)
+                        (assoc timerstate
+                               :duration (- (now) (:starttime timerstate)))
+                        timerstate))))
+
+(defn reset-game-timer []
+  (swap! game-timer (fn [timerstate]
+                      (if (not (is-running timerstate))
+                        (assoc timerstate
+                               :starttime 0
+                               :duration 0)
+                        timerstate))))
+
+(defn stop-game-timer []
+  (game-timer-tick)
+  (swap! game-timer (fn [timerstate]
+                      (if (is-running timerstate)
+                        (do
+                          (js/clearInterval (:timerid timerstate))
+                          (assoc timerstate :timerid -1))
+                        timerstate))))
+
+(defn ensure-game-timer-running []
+  (letfn [(set-game-timer-running []
+            (js/setInterval game-timer-tick 100))]
+    (swap! game-timer (fn [timerstate]
+                        (if (not (is-running timerstate))
+                          (assoc timerstate
+                                 :starttime (now)
+                                 :timerid (set-game-timer-running))
+                          timerstate)))))
+
+(defn finish-game []
+  (swap! game-over #(identity true))
+  (swap! app-state #(assoc % :game-over true))
+  (stop-game-timer))
+
 (defn update-game-state [minefield]
   (swap! game-over (fn [_ mf] (:game-over mf)) minefield)
-  (swap! app-state val-for-atom minefield))
+  (swap! app-state val-for-atom minefield)
+  (if @game-over
+    (stop-game-timer)))
 
 (defn slot-clicked [row col]
   ;; This is a hack to avoid reagent's warnings about lazy
   ;; sequences. I'm not sure about the reason but this trickery
   ;; seems to work around it.
   (when (not @game-over)
+    (ensure-game-timer-running)
     (update-game-state (m/slot-clicked @app-state row col))
     (when (= 0 (m/unchecked-slots-without-mines @app-state))
       (finish-game))))
@@ -46,10 +93,12 @@
 
 (defn restart-game []
   (let [n (js/Number @game-size)]
-   (when-not (js/isNaN n)
-     (update-game-state (m/make-empty-minefield
+    (when-not (js/isNaN n)
+      (do
+        (reset-game-timer)
+        (update-game-state (m/make-empty-minefield
                          n n
-                         (get-mine-count n n))))))
+                         (get-mine-count n n)))))))
 
 (defn game-size-selected [size]
   (swap! game-size val-for-atom size)
@@ -107,6 +156,18 @@
 (defn render-restart-button []
   [:button {:on-click #(restart-game)} "Restart"])
 
+(defn format2digits [num]
+  (if (< num 10)
+    (str "0" num)
+    (str num)))
+
+(defn render-game-clock []
+  (let [duration (:duration @game-timer)
+        minutes (format2digits (quot duration 60))
+        seconds (format2digits (mod duration 60))]
+    [:div {:class "game-clock"}
+     (clojure.string/join ":" [minutes seconds])]))
+
 (defn render-minefield []
   (let [field (:field @app-state)
         row-vector (partition-by #(:row %) field)]
@@ -114,6 +175,7 @@
      [:div
       [:table [:tbody (map render-minefield-row row-vector)]]]
      [:div {:class "options-container"}
+      (render-game-clock)
       [:div {:class "restart-container"}
        (render-game-size-select)
        (when (is-largish-game)
