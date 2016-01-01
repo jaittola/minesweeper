@@ -19,10 +19,11 @@
      :adjacent-mines 0
      :id (str row "_" col)}))
 
-(defn make-empty-minefield [w h]
+(defn make-empty-minefield [w h mines-to-lay]
   (let [size (* w h)]
     {:game-over false
      :minecount 0
+     :mines-to-lay mines-to-lay
      :width w
      :height h
      :size size
@@ -90,9 +91,8 @@
 (defn setup-minefield-if-needed [mine-index minefield]
   (if (> (:minecount minefield) 0)
     minefield
-    (let [n-mines (int (* 1.5 (:width minefield)))]
-      (->> (setup-mines minefield n-mines mine-index)
-           (setup-adjacency-counts)))))
+    (->> (setup-mines minefield (:mines-to-lay minefield) mine-index)
+         (setup-adjacency-counts))))
 
 (defn mark-adjacent-empty-slots-checked [adjacents minefield]
   (let [mf (reduce (fn [mf2 slot2]
