@@ -4,8 +4,6 @@
 
 (enable-console-print!)
 
-(println "Editing to this text should show up in your developer console.")
-
 ;; define your app data so that it doesn't get over-written on reload
 
 (defonce app-state (r/atom (m/make-empty-minefield 5 5)))
@@ -21,7 +19,6 @@
   (swap! app-state (fn [_ mf] mf) minefield))
 
 (defn slot-clicked [row col]
-  (println "Slot clicked at" row col)
   ;; This is a hack to avoid reagent's warnings about lazy
   ;; sequences. I'm not sure about the reason but this trickery
   ;; seems to work around it.
