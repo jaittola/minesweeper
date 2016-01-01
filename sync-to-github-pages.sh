@@ -20,7 +20,7 @@ lein clean && lein cljsbuild once min
 
 # Copy code to checked out source dir
 cd resources/public
-rsync -av . "$msdir"
+rsync -av --exclude=js/analytics.js . "$msdir"
 
 # Commit
 cd ${msdir}
