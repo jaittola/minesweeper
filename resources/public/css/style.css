@@ -39,7 +39,15 @@ table {
     display: inline-block;
 }
 
-.restart-dropdown {
-    display: block;
-    margin: 20px auto 0 auto;
+.options-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.restart-container {
+    display: inline-block;
+}
+
+.game-size-dropdown {
+    margin-right: 5px;
 }

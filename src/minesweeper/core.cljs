@@ -10,6 +10,7 @@
 
 (defonce app-state (r/atom (m/make-empty-minefield 5 5)))
 (defonce game-over (atom false))
+(defonce game-size (r/atom "5"))
 
 (defn finish-game []
   (swap! game-over #(identity true))
@@ -18,7 +19,6 @@
 (defn update-game-state [minefield]
   (swap! game-over (fn [_ mf] (:game-over mf)) minefield)
   (swap! app-state (fn [_ mf] mf) minefield))
-
 
 (defn slot-clicked [row col]
   (println "Slot clicked at" row col)
@@ -30,11 +30,14 @@
     (when (= 0 (m/unchecked-slots-without-mines @app-state))
       (finish-game))))
 
-(defn restart-clicked [size]
-  (println "Restart-clicked with size" size)
-  (let [n (js/Number size)]
+(defn restart-game []
+  (let [n (js/Number @game-size)]
    (when-not (js/isNaN n)
      (update-game-state (m/make-empty-minefield n n)))))
+
+(defn game-size-selected [size]
+  (swap! game-size (fn [_ v] v) size)
+  (restart-game))
 
 (defn render-unchecked-slot [slot]
   ^{:key (:id slot) } [:td [:a {:class "slot unchecked"
@@ -66,14 +69,16 @@
   (let [rnum (:row (first row))]
     ^{:key (str "r_" rnum)} [:tr (map render-slot row)]))
 
-(defn render-restart-dropdown []
-  [:select {:class "restart-dropdown"
-            :on-change #(restart-clicked (-> % .-target .-value))
-            :value "r"}
-    [:option {:value "r"} "Restart game"]
-    [:option {:value "5"} "Small: 5x5"]
-    [:option {:value "10"} "Medium: 10x10"]
-    [:option {:value "20"} "Large: 20x20"]])
+(defn render-game-size-select []
+  [:select {:class "game-size-dropdown"
+            :on-change #(game-size-selected (-> % .-target .-value))
+            :value @game-size}
+   [:option {:value "5"} "Small: 5x5"]
+   [:option {:value "10"} "Medium: 10x10"]
+   [:option {:value "20"} "Large: 20x20"]])
+
+(defn render-restart-button []
+  [:button {:on-click #(restart-game)} "Restart"])
 
 (defn render-minefield []
   (let [field (:field @app-state)
@@ -81,7 +86,10 @@
     [:div {:class "content-container"}
      [:div
       [:table [:tbody (map render-minefield-row row-vector)]]]
-     (render-restart-dropdown)]))
+     [:div {:class "options-container"}
+      [:div {:class "restart-container"}
+       (render-game-size-select)
+       (render-restart-button)]]]))
 
 (defn do-render []
   (r/render [render-minefield]
